@@ -1,45 +1,320 @@
 <!DOCTYPE html>
-<html>
+<html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>3D Image Viewer</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Visor 3D Interactivo - Powered by Three.js</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
     <style>
-        body { margin: 0; }
-        canvas { display: block; }
+        :root {
+            --primary-color: #04e5e5;
+            --secondary-color: #7928ca;
+            --background-dark: #111827;
+            --background-light: #1f2937;
+            --text-primary: #f3f4f6;
+            --text-secondary: #9ca3af;
+            --shadow-color: rgba(4, 229, 229, 0.2);
+            --panel-bg: rgba(17, 24, 39, 0.85);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Montserrat', sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, var(--background-dark), var(--background-light));
+            color: var(--text-primary);
+            overflow: hidden;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        #canvas-container {
+            flex: 1;
+            position: relative;
+        }
+
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+
+        #ui-panel {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: var(--panel-bg);
+            padding: 20px;
+            border-radius: 12px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 4px 25px rgba(0, 0, 0, 0.3), 0 0 15px var(--shadow-color);
+            max-width: 320px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: transform 0.3s ease, opacity 0.3s ease;
+        }
+
+        #ui-panel:hover {
+            transform: translateY(-5px);
+        }
+
+        h1 {
+            font-size: 1.6em;
+            font-weight: 600;
+            color: var(--primary-color);
+            margin-bottom: 12px;
+            letter-spacing: 0.5px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding-bottom: 10px;
+            display: flex;
+            align-items: center;
+        }
+
+        h1 i {
+            margin-right: 10px;
+        }
+
+        p {
+            font-family: 'Roboto', sans-serif;
+            font-size: 0.95em;
+            line-height: 1.6;
+            color: var(--text-secondary);
+            margin-bottom: 15px;
+            font-weight: 300;
+        }
+
+        #controls {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .btn {
+            background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+            color: #000;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.25s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.9em;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .btn i {
+            margin-right: 8px;
+            font-size: 1.1em;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2);
+            background-position: right center;
+        }
+
+        .btn:active {
+            transform: translateY(1px);
+        }
+
+        footer {
+            padding: 15px;
+            text-align: center;
+            background: var(--background-dark);
+            font-size: 0.8em;
+            color: var(--text-secondary);
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .logo {
+            font-weight: 700;
+            color: var(--primary-color);
+            letter-spacing: 1px;
+        }
+
+        /* Loader */
+        #loader {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--background-dark);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            transition: opacity 0.5s ease, visibility 0.5s;
+        }
+
+        .loader-spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            border-top-color: var(--primary-color);
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* UI Animation */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        #ui-panel {
+            animation: fadeIn 0.6s ease forwards;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            #ui-panel {
+                top: auto;
+                bottom: 20px;
+                right: 20px;
+                left: 20px;
+                max-width: none;
+            }
+
+            #controls {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Tooltip */
+        .tooltip {
+            position: relative;
+        }
+
+        .tooltip:hover::after {
+            content: attr(data-tooltip);
+            position: absolute;
+            top: -40px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 0.8em;
+            white-space: nowrap;
+            z-index: 10;
+        }
     </style>
 </head>
 <body>
+    <div id="loader">
+        <div class="loader-spinner"></div>
+    </div>
+    
+    <div id="canvas-container">
+        <div id="ui-panel">
+            <h1><i class="fas fa-cube"></i> Visor 3D Interactivo</h1>
+            <p>Explora imágenes en un entorno tridimensional con tecnología avanzada. Controla la visualización con el mouse y personaliza la experiencia con nuestros controles intuitivos.</p>
+            <div id="controls">
+                <button class="btn tooltip" data-tooltip="Restaurar posición inicial" onclick="resetView()">
+                    <i class="fas fa-sync-alt"></i> Reiniciar
+                </button>
+                <button class="btn tooltip" data-tooltip="Cambiar a la siguiente textura" onclick="changeTexture()">
+                    <i class="fas fa-images"></i> Textura
+                </button>
+                <button class="btn tooltip" data-tooltip="Activar modo pantalla completa" onclick="toggleFullscreen()">
+                    <i class="fas fa-expand"></i> Pantalla completa
+                </button>
+                <button class="btn tooltip" data-tooltip="Activar rotación automática" onclick="toggleAutoRotate()">
+                    <i class="fas fa-redo"></i> Auto-rotación
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <footer>
+        Desarrollado con <span class="logo">Three.js</span> | © 2025 <span class="logo">xAI Technologies</span>
+    </footer>
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
     <script>
+        // Loader
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                document.getElementById('loader').style.opacity = '0';
+                setTimeout(() => {
+                    document.getElementById('loader').style.display = 'none';
+                }, 500);
+            }, 1000);
+        });
+
         // Scene setup
         const scene = new THREE.Scene();
-        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-        const renderer = new THREE.WebGLRenderer();
-        renderer.setSize(window.innerWidth, window.innerHeight);
-        document.body.appendChild(renderer.domElement);
-
-        // Create plane geometry
-        const geometry = new THREE.PlaneGeometry(5, 3);
+        scene.background = new THREE.Color(0x111827);
         
-        // Load texture (adjust path based on your repo structure)
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(window.devicePixelRatio);
+        document.getElementById('canvas-container').appendChild(renderer.domElement);
+
+        // Plane geometry with enhanced material
+        const geometry = new THREE.PlaneGeometry(5, 3);
         const textureLoader = new THREE.TextureLoader();
-        const texture = textureLoader.load('./images/1.jpg');
-        const material = new THREE.MeshBasicMaterial({ 
+        let currentTextureIndex = 0;
+        const textures = [
+            './images/1.jpeg', 
+            './images/2.jpeg',
+            'https://threejs.org/examples/textures/uv_grid_opengl.jpg'
+        ];
+        
+        // Create loading manager to track progress
+        const loadingManager = new THREE.LoadingManager();
+        loadingManager.onProgress = function(url, loaded, total) {
+            console.log('Loading texture: ' + Math.round(loaded / total * 100) + '%');
+        };
+        
+        const texture = textureLoader.load(textures[currentTextureIndex]);
+        const material = new THREE.MeshPhongMaterial({ 
             map: texture,
-            side: THREE.DoubleSide 
+            side: THREE.DoubleSide,
+            shininess: 50
         });
+        
         const plane = new THREE.Mesh(geometry, material);
         scene.add(plane);
+
+        // Add lighting for better 3D effect
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+        scene.add(ambientLight);
+        
+        const directionalLight = new THREE.DirectionalLight(0x04e5e5, 0.8);
+        directionalLight.position.set(0, 1, 1);
+        scene.add(directionalLight);
+        
+        const backLight = new THREE.DirectionalLight(0x7928ca, 0.5);
+        backLight.position.set(0, -1, -1);
+        scene.add(backLight);
 
         // Camera position
         camera.position.z = 5;
 
         // Mouse controls
         let isDragging = false;
-        let previousMousePosition = {
-            x: 0,
-            y: 0
-        };
+        let previousMousePosition = { x: 0, y: 0 };
+        let autoRotate = false;
 
         document.addEventListener('mousedown', (e) => {
             isDragging = true;
@@ -59,33 +334,129 @@
                 plane.rotation.y += deltaMove.x * 0.005;
                 plane.rotation.x += deltaMove.y * 0.005;
 
-                previousMousePosition = {
-                    x: e.clientX,
-                    y: e.clientY
+                previousMousePosition = { x: e.clientX, y: e.clientY };
+            } else {
+                previousMousePosition = { x: e.clientX, y: e.clientY };
+            }
+        });
+
+        // Touch controls for mobile
+        document.addEventListener('touchstart', (e) => {
+            isDragging = true;
+            previousMousePosition = { 
+                x: e.touches[0].clientX, 
+                y: e.touches[0].clientY 
+            };
+        });
+
+        document.addEventListener('touchend', (e) => {
+            isDragging = false;
+        });
+
+        document.addEventListener('touchmove', (e) => {
+            if (isDragging) {
+                const deltaMove = {
+                    x: e.touches[0].clientX - previousMousePosition.x,
+                    y: e.touches[0].clientY - previousMousePosition.y
+                };
+
+                plane.rotation.y += deltaMove.x * 0.005;
+                plane.rotation.x += deltaMove.y * 0.005;
+
+                previousMousePosition = { 
+                    x: e.touches[0].clientX, 
+                    y: e.touches[0].clientY 
                 };
             }
         });
 
-        document.addEventListener('mousemove', (e) => {
-            previousMousePosition = {
-                x: e.clientX,
-                y: e.clientY
-            };
-        });
-
-        // Animation loop
+        // Animation loop with rotation effect
         function animate() {
             requestAnimationFrame(animate);
+            
+            if (autoRotate) {
+                plane.rotation.y += 0.005;
+            }
+            
             renderer.render(scene, camera);
         }
         animate();
 
-        // Handle window resize
+        // Window resize handler
         window.addEventListener('resize', () => {
             camera.aspect = window.innerWidth / window.innerHeight;
             camera.updateProjectionMatrix();
             renderer.setSize(window.innerWidth, window.innerHeight);
         });
+
+        // Additional functions for UI
+        function resetView() {
+            // Animate reset with GSAP-like animation
+            const initialRotation = { 
+                x: plane.rotation.x, 
+                y: plane.rotation.y 
+            };
+            
+            const start = Date.now();
+            const duration = 1000; // 1 second
+            
+            function resetAnimation() {
+                const elapsed = Date.now() - start;
+                const progress = Math.min(elapsed / duration, 1);
+                const easeProgress = progress * (2 - progress); // Ease out
+                
+                plane.rotation.x = initialRotation.x * (1 - easeProgress);
+                plane.rotation.y = initialRotation.y * (1 - easeProgress);
+                
+                if (progress < 1) {
+                    requestAnimationFrame(resetAnimation);
+                }
+            }
+            
+            resetAnimation();
+            
+            // Reset camera position
+            camera.position.set(0, 0, 5);
+            camera.lookAt(0, 0, 0);
+        }
+
+        function changeTexture() {
+            currentTextureIndex = (currentTextureIndex + 1) % textures.length;
+            const newTexture = textureLoader.load(textures[currentTextureIndex]);
+            
+            // Crossfade effect
+            const oldMaterial = plane.material;
+            const newMaterial = oldMaterial.clone();
+            newMaterial.map = newTexture;
+            newMaterial.needsUpdate = true;
+            
+            plane.material = newMaterial;
+        }
+        
+        function toggleFullscreen() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(err => {
+                    alert(`Error al intentar entrar en modo pantalla completa: ${err.message}`);
+                });
+            } else {
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                }
+            }
+        }
+        
+        function toggleAutoRotate() {
+            autoRotate = !autoRotate;
+            const rotateButton = document.querySelector('.btn:nth-child(4)');
+            
+            if (autoRotate) {
+                rotateButton.innerHTML = '<i class="fas fa-pause"></i> Detener';
+                rotateButton.style.background = 'linear-gradient(45deg, #ff4b4b, #ff9f43)';
+            } else {
+                rotateButton.innerHTML = '<i class="fas fa-redo"></i> Auto-rotación';
+                rotateButton.style.background = 'linear-gradient(45deg, var(--primary-color), var(--secondary-color))';
+            }
+        }
     </script>
 </body>
 </html>
