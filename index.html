@@ -6,58 +6,88 @@
     <title>Visor 3D Interactivo - Powered by Three.js</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --primary-color: #04e5e5;
-            --secondary-color: #7928ca;
-            --background-dark: #111827;
-            --background-light: #1f2937;
-            --text-primary: #f3f4f6;
-            --text-secondary: #9ca3af;
-            --shadow-color: rgba(4, 229, 229, 0.2);
-            --panel-bg: rgba(17, 24, 39, 0.85);
+            --primary-color: #ffffff;
+            --secondary-color: #a1a1aa;
+            --background-dark: #0f0f0f;
+            --background-light: #1a1a1a;
+            --text-primary: #ffffff;
+            --text-secondary: #a1a1aa;
+            --shadow-color: rgba(255, 255, 255, 0.1);
         }
 
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: 'Montserrat', sans-serif;
+            font-family: 'Inter', sans-serif;
         }
 
         body {
-            background: linear-gradient(135deg, var(--background-dark), var(--background-light));
+            background: var(--background-dark);
             color: var(--text-primary);
-            overflow: hidden;
-            height: 100vh;
+            overflow-x: hidden;
+            min-height: 100vh;
             display: flex;
             flex-direction: column;
+        }
+
+        header {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            padding: 20px 40px;
+            background: rgba(15, 15, 15, 0.95);
+            z-index: 1000;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.5em;
+            font-weight: 700;
+            color: var(--primary-color);
+        }
+
+        nav a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            margin-left: 30px;
+            font-weight: 400;
+            transition: color 0.3s ease;
+        }
+
+        nav a:hover {
+            color: var(--primary-color);
         }
 
         #canvas-container {
             flex: 1;
             position: relative;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }
 
         canvas {
-            display: block;
             width: 100%;
             height: 100%;
         }
 
         #ui-panel {
             position: absolute;
-            top: 20px;
-            right: 20px;
-            background: var(--panel-bg);
-            padding: 20px;
-            border-radius: 12px;
-            backdrop-filter: blur(10px);
-            box-shadow: 0 4px 25px rgba(0, 0, 0, 0.3), 0 0 15px var(--shadow-color);
-            max-width: 320px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            transition: transform 0.3s ease, opacity 0.3s ease;
+            bottom: 40px;
+            background: rgba(26, 26, 26, 0.9);
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 4px 20px var(--shadow-color);
+            max-width: 400px;
+            text-align: center;
+            transition: transform 0.3s ease;
         }
 
         #ui-panel:hover {
@@ -65,84 +95,55 @@
         }
 
         h1 {
-            font-size: 1.6em;
-            font-weight: 600;
+            font-size: 2em;
+            font-weight: 700;
             color: var(--primary-color);
-            margin-bottom: 12px;
-            letter-spacing: 0.5px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-            padding-bottom: 10px;
-            display: flex;
-            align-items: center;
-        }
-
-        h1 i {
-            margin-right: 10px;
+            margin-bottom: 15px;
         }
 
         p {
-            font-family: 'Roboto', sans-serif;
-            font-size: 0.95em;
-            line-height: 1.6;
+            font-size: 1em;
+            line-height: 1.5;
             color: var(--text-secondary);
-            margin-bottom: 15px;
-            font-weight: 300;
+            margin-bottom: 20px;
         }
 
         #controls {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 10px;
-            margin-top: 20px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            justify-content: center;
         }
 
         .btn {
-            background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
-            color: #000;
+            background: var(--primary-color);
+            color: var(--background-dark);
             border: none;
-            padding: 10px 15px;
-            border-radius: 8px;
+            padding: 12px 20px;
+            border-radius: 6px;
             cursor: pointer;
-            font-weight: 500;
-            transition: all 0.25s ease;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 0.9em;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-        }
-
-        .btn i {
-            margin-right: 8px;
-            font-size: 1.1em;
+            font-weight: 600;
+            transition: background 0.3s ease, transform 0.3s ease;
         }
 
         .btn:hover {
+            background: var(--text-secondary);
             transform: translateY(-2px);
-            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2);
-            background-position: right center;
-        }
-
-        .btn:active {
-            transform: translateY(1px);
         }
 
         footer {
-            padding: 15px;
+            padding: 20px;
             text-align: center;
-            background: var(--background-dark);
-            font-size: 0.8em;
+            background: var(--background-light);
+            font-size: 0.9em;
             color: var(--text-secondary);
-            border-top: 1px solid rgba(255, 255, 255, 0.05);
         }
 
-        .logo {
-            font-weight: 700;
+        .logo-footer {
             color: var(--primary-color);
-            letter-spacing: 1px;
+            font-weight: 600;
         }
 
-        /* Loader */
         #loader {
             position: fixed;
             top: 0;
@@ -153,66 +154,51 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            z-index: 1000;
-            transition: opacity 0.5s ease, visibility 0.5s;
+            z-index: 2000;
+            transition: opacity 0.5s ease;
         }
 
         .loader-spinner {
-            width: 50px;
-            height: 50px;
-            border: 5px solid rgba(255, 255, 255, 0.1);
-            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            border: 6px solid var(--text-secondary);
             border-top-color: var(--primary-color);
+            border-radius: 50%;
             animation: spin 1s ease-in-out infinite;
+        }
+
+        .hidden {
+            display: none;
         }
 
         @keyframes spin {
             to { transform: rotate(360deg); }
         }
 
-        /* UI Animation */
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(20px); }
             to { opacity: 1; transform: translateY(0); }
         }
 
         #ui-panel {
-            animation: fadeIn 0.6s ease forwards;
+            animation: fadeIn 0.8s ease forwards;
         }
 
-        /* Responsive */
         @media (max-width: 768px) {
             #ui-panel {
-                top: auto;
                 bottom: 20px;
-                right: 20px;
                 left: 20px;
+                right: 20px;
                 max-width: none;
             }
 
-            #controls {
-                grid-template-columns: 1fr;
+            header {
+                padding: 15px 20px;
             }
-        }
 
-        /* Tooltip */
-        .tooltip {
-            position: relative;
-        }
-
-        .tooltip:hover::after {
-            content: attr(data-tooltip);
-            position: absolute;
-            top: -40px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: rgba(0, 0, 0, 0.8);
-            color: white;
-            padding: 5px 10px;
-            border-radius: 5px;
-            font-size: 0.8em;
-            white-space: nowrap;
-            z-index: 10;
+            nav a {
+                margin-left: 15px;
+            }
         }
     </style>
 </head>
@@ -220,34 +206,34 @@
     <div id="loader">
         <div class="loader-spinner"></div>
     </div>
-    
+
+    <header id="header-ui">
+        <div class="logo">Visor 3D</div>
+        <nav>
+            <a href="#home">Inicio</a>
+            <a href="#features">Funciones</a>
+            <a href="#contact">Contacto</a>
+        </nav>
+    </header>
+
     <div id="canvas-container">
         <div id="ui-panel">
-            <h1><i class="fas fa-cube"></i> Visor 3D Interactivo</h1>
-            <p>Explora imágenes en un entorno tridimensional con tecnología avanzada. Controla la visualización con el mouse y personaliza la experiencia con nuestros controles intuitivos.</p>
+            <h1>Visor 3D Interactivo</h1>
+            <p>Explora imágenes en un entorno tridimensional con tecnología avanzada. Personaliza tu experiencia con controles intuitivos.</p>
             <div id="controls">
-                <button class="btn tooltip" data-tooltip="Restaurar posición inicial" onclick="resetView()">
-                    <i class="fas fa-sync-alt"></i> Reiniciar
-                </button>
-                <button class="btn tooltip" data-tooltip="Cambiar a la siguiente textura" onclick="changeTexture()">
-                    <i class="fas fa-images"></i> Textura
-                </button>
-                <button class="btn tooltip" data-tooltip="Activar modo pantalla completa" onclick="toggleFullscreen()">
-                    <i class="fas fa-expand"></i> Pantalla completa
-                </button>
-                <button class="btn tooltip" data-tooltip="Activar rotación automática" onclick="toggleAutoRotate()">
-                    <i class="fas fa-redo"></i> Auto-rotación
-                </button>
+                <button class="btn" onclick="resetView()">Reiniciar</button>
+                <button class="btn" onclick="changeTexture()">Textura</button>
+                <button class="btn" onclick="toggleFullscreen()">Pantalla Completa</button>
+                <button class="btn" onclick="toggleAutoRotate()">Auto-rotación</button>
             </div>
         </div>
     </div>
-    
-    <footer>
-        Desarrollado con <span class="logo">Three.js</span> | © 2025 <span class="logo">xAI Technologies</span>
+
+    <footer id="footer-ui">
+        Desarrollado con <span class="logo-footer">Three.js</span> | © 2025 <span class="logo-footer">xAI Technologies</span>
     </footer>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
     <script>
         // Loader
         window.addEventListener('load', () => {
@@ -261,54 +247,35 @@
 
         // Scene setup
         const scene = new THREE.Scene();
-        scene.background = new THREE.Color(0x111827);
+        scene.background = new THREE.Color(0x0f0f0f);
         
         const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-        
         const renderer = new THREE.WebGLRenderer({ antialias: true });
         renderer.setSize(window.innerWidth, window.innerHeight);
         renderer.setPixelRatio(window.devicePixelRatio);
         document.getElementById('canvas-container').appendChild(renderer.domElement);
 
-        // Plane geometry with enhanced material
+        // Plane geometry
         const geometry = new THREE.PlaneGeometry(5, 3);
         const textureLoader = new THREE.TextureLoader();
         let currentTextureIndex = 0;
-        const textures = [
-            './images/1.jpeg', 
-            './images/2.jpeg',
-            'https://threejs.org/examples/textures/uv_grid_opengl.jpg'
-        ];
+        let textures = []; // Array vacío que se llenará con el JSON
         
-        // Create loading manager to track progress
-        const loadingManager = new THREE.LoadingManager();
-        loadingManager.onProgress = function(url, loaded, total) {
-            console.log('Loading texture: ' + Math.round(loaded / total * 100) + '%');
-        };
-        
-        const texture = textureLoader.load(textures[currentTextureIndex]);
         const material = new THREE.MeshPhongMaterial({ 
-            map: texture,
             side: THREE.DoubleSide,
             shininess: 50
         });
-        
         const plane = new THREE.Mesh(geometry, material);
         scene.add(plane);
 
-        // Add lighting for better 3D effect
+        // Lighting
         const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
         scene.add(ambientLight);
         
-        const directionalLight = new THREE.DirectionalLight(0x04e5e5, 0.8);
+        const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
         directionalLight.position.set(0, 1, 1);
         scene.add(directionalLight);
-        
-        const backLight = new THREE.DirectionalLight(0x7928ca, 0.5);
-        backLight.position.set(0, -1, -1);
-        scene.add(backLight);
 
-        // Camera position
         camera.position.z = 5;
 
         // Mouse controls
@@ -340,44 +307,51 @@
             }
         });
 
-        // Touch controls for mobile
-        document.addEventListener('touchstart', (e) => {
-            isDragging = true;
-            previousMousePosition = { 
-                x: e.touches[0].clientX, 
-                y: e.touches[0].clientY 
-            };
-        });
-
-        document.addEventListener('touchend', (e) => {
-            isDragging = false;
-        });
-
-        document.addEventListener('touchmove', (e) => {
-            if (isDragging) {
-                const deltaMove = {
-                    x: e.touches[0].clientX - previousMousePosition.x,
-                    y: e.touches[0].clientY - previousMousePosition.y
-                };
-
-                plane.rotation.y += deltaMove.x * 0.005;
-                plane.rotation.x += deltaMove.y * 0.005;
-
-                previousMousePosition = { 
-                    x: e.touches[0].clientX, 
-                    y: e.touches[0].clientY 
-                };
+        // Keyboard controls
+        let uiVisible = true;
+        
+        document.addEventListener('keydown', (event) => {
+            switch(event.key.toLowerCase()) {
+                case 'q': // Imagen anterior
+                    currentTextureIndex = (currentTextureIndex - 1 + textures.length) % textures.length;
+                    updateTexture();
+                    break;
+                case 'e': // Imagen siguiente
+                    currentTextureIndex = (currentTextureIndex + 1) % textures.length;
+                    updateTexture();
+                    break;
+                case 'h': // Ocultar/Mostrar UI
+                    toggleUI();
+                    break;
             }
         });
 
-        // Animation loop with rotation effect
+        // Cargar el JSON y luego inicializar la primera textura
+        fetch('./images.json')
+            .then(response => response.json())
+            .then(data => {
+                textures = data.textures;
+                if (textures.length > 0) {
+                    const initialTexture = textureLoader.load(textures[currentTextureIndex]);
+                    material.map = initialTexture;
+                    material.needsUpdate = true;
+                }
+            })
+            .catch(error => {
+                console.error('Error al cargar el JSON:', error);
+                // Textura de fallback en caso de error
+                textures = ['https://threejs.org/examples/textures/uv_grid_opengl.jpg'];
+                const fallbackTexture = textureLoader.load(textures[0]);
+                material.map = fallbackTexture;
+                material.needsUpdate = true;
+            });
+
+        // Animation loop
         function animate() {
             requestAnimationFrame(animate);
-            
             if (autoRotate) {
                 plane.rotation.y += 0.005;
             }
-            
             renderer.render(scene, camera);
         }
         animate();
@@ -389,55 +363,27 @@
             renderer.setSize(window.innerWidth, window.innerHeight);
         });
 
-        // Additional functions for UI
+        // UI Functions
         function resetView() {
-            // Animate reset with GSAP-like animation
-            const initialRotation = { 
-                x: plane.rotation.x, 
-                y: plane.rotation.y 
-            };
-            
-            const start = Date.now();
-            const duration = 1000; // 1 second
-            
-            function resetAnimation() {
-                const elapsed = Date.now() - start;
-                const progress = Math.min(elapsed / duration, 1);
-                const easeProgress = progress * (2 - progress); // Ease out
-                
-                plane.rotation.x = initialRotation.x * (1 - easeProgress);
-                plane.rotation.y = initialRotation.y * (1 - easeProgress);
-                
-                if (progress < 1) {
-                    requestAnimationFrame(resetAnimation);
-                }
-            }
-            
-            resetAnimation();
-            
-            // Reset camera position
+            plane.rotation.set(0, 0, 0);
             camera.position.set(0, 0, 5);
             camera.lookAt(0, 0, 0);
         }
 
+        function updateTexture() {
+            const newTexture = textureLoader.load(textures[currentTextureIndex]);
+            material.map = newTexture;
+            material.needsUpdate = true;
+        }
+
         function changeTexture() {
             currentTextureIndex = (currentTextureIndex + 1) % textures.length;
-            const newTexture = textureLoader.load(textures[currentTextureIndex]);
-            
-            // Crossfade effect
-            const oldMaterial = plane.material;
-            const newMaterial = oldMaterial.clone();
-            newMaterial.map = newTexture;
-            newMaterial.needsUpdate = true;
-            
-            plane.material = newMaterial;
+            updateTexture();
         }
         
         function toggleFullscreen() {
             if (!document.fullscreenElement) {
-                document.documentElement.requestFullscreen().catch(err => {
-                    alert(`Error al intentar entrar en modo pantalla completa: ${err.message}`);
-                });
+                document.documentElement.requestFullscreen();
             } else {
                 if (document.exitFullscreen) {
                     document.exitFullscreen();
@@ -447,14 +393,22 @@
         
         function toggleAutoRotate() {
             autoRotate = !autoRotate;
-            const rotateButton = document.querySelector('.btn:nth-child(4)');
+        }
+
+        function toggleUI() {
+            uiVisible = !uiVisible;
+            const uiPanel = document.getElementById('ui-panel');
+            const header = document.getElementById('header-ui');
+            const footer = document.getElementById('footer-ui');
             
-            if (autoRotate) {
-                rotateButton.innerHTML = '<i class="fas fa-pause"></i> Detener';
-                rotateButton.style.background = 'linear-gradient(45deg, #ff4b4b, #ff9f43)';
+            if (uiVisible) {
+                uiPanel.classList.remove('hidden');
+                header.classList.remove('hidden');
+                footer.classList.remove('hidden');
             } else {
-                rotateButton.innerHTML = '<i class="fas fa-redo"></i> Auto-rotación';
-                rotateButton.style.background = 'linear-gradient(45deg, var(--primary-color), var(--secondary-color))';
+                uiPanel.classList.add('hidden');
+                header.classList.add('hidden');
+                footer.classList.add('hidden');
             }
         }
     </script>
