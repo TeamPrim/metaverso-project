@@ -1,0 +1,7 @@
+{
+    "textures": [
+        "./images/1.jpeg",
+        "./images/2.jpeg",
+        "https://threejs.org/examples/textures/uv_grid_opengl.jpg"
+    ]
+}
